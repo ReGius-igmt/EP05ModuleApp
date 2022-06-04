@@ -1,0 +1,27 @@
+#root{
+    -fx-background-color: #e8f1f2;
+}
+
+.sideBar{
+    -fx-background-color: #2B3A67;
+}
+
+.sideBar ToggleButton{
+    -fx-max-width: Infinity;
+    -fx-font-size: 16px;
+    -fx-pref-height: 40px;
+    -fx-padding: 0 20px;
+    -fx-fill: #fff;
+    -fx-color: #fff;
+    -fx-text-fill: #fff;
+    -fx-background-color: transparent;
+}
+
+.sideBar ToggleButton:hover{
+    -fx-cursor: hand;
+    -fx-background-color: #304173;
+}
+
+.sideBar ToggleButton:selected{
+    -fx-background-color: #1F2A4A;
+}
