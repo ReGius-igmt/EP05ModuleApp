@@ -4,8 +4,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.Node;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import ru.ket.EP05.T5.model.Call;
 import ru.ket.EP05.T5.model.Country;
 import ru.regiuss.EP05.core.SimpleViewHandler;
@@ -13,7 +18,10 @@ import ru.regiuss.EP05.core.controller.Controller;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MainController implements Controller {
@@ -48,12 +56,22 @@ public class MainController implements Controller {
 
     @FXML
     void onSelectConversationsPath(ActionEvent event) {
-
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Выбор файла");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT", "*.txt"));
+        chooser.setInitialDirectory(vh.getModule().getWorkDirectory());
+        File f = chooser.showOpenDialog(((Node)event.getTarget()).getScene().getWindow());
+        if(f != null)conversationsPathField.setText(f.getAbsolutePath());
     }
 
     @FXML
     void onSelectCountriesPath(ActionEvent event) {
-
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Выбор файла");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT", "*.txt"));
+        chooser.setInitialDirectory(vh.getModule().getWorkDirectory());
+        File f = chooser.showOpenDialog(((Node)event.getTarget()).getScene().getWindow());
+        if(f != null)countriesPathField.setText(f.getAbsolutePath());
     }
 
     @FXML
@@ -68,9 +86,13 @@ public class MainController implements Controller {
             String line;
             countries = new HashMap<>();
             while ((line = buffer.readLine()) != null){
-                String[] data = line.split(";");
-                if(data.length < 2)continue;
-                countries.put(Integer.parseInt(data[0]), new Country(Integer.parseInt(data[0]), Integer.parseInt(data[2]), data[1]));
+                try {
+                    String[] data = line.split(";");
+                    if(data.length < 2)continue;
+                    countries.put(Integer.parseInt(data[0]), new Country(Integer.parseInt(data[0]), Integer.parseInt(data[2]), data[1]));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             countriesTable.setItems(FXCollections.observableList(countries.values().stream().toList()));
             countries.put(0, new Country(0, 0, "Все"));
@@ -85,11 +107,15 @@ public class MainController implements Controller {
             String line;
             callsMap = new HashMap<>();
             while ((line = buffer.readLine()) != null){
-                String[] data = line.split(";");
-                if(data.length < 3)continue;
-                List<Call> callList = callsMap.computeIfAbsent(data[0], k -> new ArrayList<>());
-                Call call = new Call(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]));
-                callList.add(call);
+                try {
+                    String[] data = line.split(";");
+                    if(data.length < 3 || !countries.containsKey(Integer.parseInt(data[1])))continue;
+                    List<Call> callList = callsMap.computeIfAbsent(data[0], k -> new ArrayList<>());
+                    Call call = new Call(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]));
+                    callList.add(call);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -117,8 +143,6 @@ public class MainController implements Controller {
                 }
             }
         }
-
-        abonentsBox.setMaxHeight(500);
 
         TableColumn<Call, String> column = new TableColumn<>("Телефон");
         column.setCellValueFactory(call -> new SimpleStringProperty(call.getValue().getPhone()));

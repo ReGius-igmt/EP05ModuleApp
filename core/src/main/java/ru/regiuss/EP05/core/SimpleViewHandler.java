@@ -73,14 +73,18 @@ public class SimpleViewHandler {
             loader.setLocation(location);
             loader.setController(controller);
             Node n = loader.load();
-            ScrollPane p = new ScrollPane(n);
-            p.setFitToHeight(true);
-            p.setFitToWidth(true);
-            page.setValue(p);
+            openPage(n);
             controller.init(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void openPage(Node n){
+        ScrollPane p = new ScrollPane(n);
+        p.setFitToHeight(true);
+        p.setFitToWidth(true);
+        page.setValue(p);
     }
 
     public void show() {

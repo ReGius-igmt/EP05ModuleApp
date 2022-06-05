@@ -1,11 +1,12 @@
 package ru.ket.EP05.T1;
 
 import ru.regiuss.EP05.core.module.SimpleModule;
+import ru.regiuss.EP05.core.selectable.SingleSelectable;
 
-public class T1 extends SimpleModule<MainController> {
+public class T1 extends SimpleModule {
 
     public T1() {
-        super(MainController.class);
+        selectable = new SingleSelectable(getClass().getResource("/view/main.fxml"), new MainController());
     }
 
     @Override

@@ -1,45 +1,29 @@
 package ru.regiuss.EP05.core.module;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.scene.Node;
 import ru.regiuss.EP05.core.SimpleViewHandler;
-import ru.regiuss.EP05.core.controller.Controller;
+import ru.regiuss.EP05.core.selectable.Selectable;
+import ru.regiuss.EP05.core.selectable.SingleSelectable;
 
 import java.io.File;
 
-public abstract class SimpleModule<T extends Controller> implements Module{
+public abstract class SimpleModule implements Module{
 
     protected ModuleInfo info;
-    protected SimpleViewHandler vh;
     protected File workDirectory;
-    protected Class<T> typeParameterClass;
-
-    public SimpleModule(Class<T> typeParameterClass){
-        this.typeParameterClass = typeParameterClass;
-    }
+    protected Selectable selectable;
 
     @Override
-    public void onLoad() {
-
-    }
+    public void onLoad() {}
 
     @Override
-    public void onUnselect() {
-
-    }
+    public void onUnselect() {}
 
     @Override
-    public void onSelect(ObjectProperty<Node> page, ObjectProperty<Node> modal) {
-        if(vh == null){
-            vh = new SimpleViewHandler(this);
-            vh.init();
-        }
-        vh.bind(page, modal);
-        try {
-            vh.openPage(typeParameterClass.getResource("/view/main.fxml"), typeParameterClass.getDeclaredConstructor().newInstance());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void onExit() {}
+
+    @Override
+    public void onSelect(SimpleViewHandler vh) {
+        selectable.select(vh);
     }
 
     @Override
@@ -50,11 +34,6 @@ public abstract class SimpleModule<T extends Controller> implements Module{
     @Override
     public void setInfo(ModuleInfo info) {
         this.info = info;
-    }
-
-    @Override
-    public void onExit() {
-
     }
 
     @Override

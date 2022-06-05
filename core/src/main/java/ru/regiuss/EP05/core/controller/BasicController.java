@@ -1,20 +1,17 @@
 package ru.regiuss.EP05.core.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import ru.regiuss.EP05.core.module.Module;
 import ru.regiuss.EP05.core.SimpleViewHandler;
+import ru.regiuss.EP05.core.module.Module;
 import ru.regiuss.EP05.core.module.ModuleInfo;
 
 import java.io.File;
@@ -54,6 +51,7 @@ public class BasicController implements Controller{
         File[] files = modulesFolder.listFiles();
         if(files != null){
             for(File jar : files){
+                if(!(jar.isFile() && jar.getName().endsWith(".jar")))continue;
                 System.out.println(jar.getName());
                 Module m = loadModule(jar);
                 if(m == null)continue;
@@ -65,10 +63,26 @@ public class BasicController implements Controller{
             ToggleButton btn = new ToggleButton(module.getTitle());
             btn.setAlignment(Pos.CENTER_LEFT);
             btn.setToggleGroup(navigationGroup);
-            btn.setOnAction(event -> {
-                if(btn.isSelected())module.onSelect(page.centerProperty(), modal.centerProperty());
-                else module.onUnselect();
+            navigationGroup.selectedToggleProperty().addListener((observableValue, toggle, t1) -> {
+                if(btn.equals(t1)){
+                    vh.setModule(module);
+                    module.onSelect(vh);
+                } else if(btn.equals(toggle)){
+                    module.onUnselect();
+                    vh.setModule(null);
+                }
+                if(t1 == null)vh.openPage(null);
             });
+//            btn.setOnAction(event -> {
+//                if(btn.isSelected()){
+//                    vh.setModule(module);
+//                    module.onSelect(vh);
+//                }
+//                else {
+//                    module.onUnselect();
+//                    vh.setModule(null);
+//                }
+//            });
             modelsList.getChildren().add(btn);
         }
     }
