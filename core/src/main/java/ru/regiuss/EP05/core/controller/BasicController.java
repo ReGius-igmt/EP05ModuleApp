@@ -12,11 +12,13 @@ import javafx.scene.layout.VBox;
 import ru.regiuss.EP05.core.SimpleViewHandler;
 import ru.regiuss.EP05.core.module.Module;
 import ru.regiuss.EP05.core.module.ModuleInfo;
+import ru.regiuss.EP05.core.module.ModuleManager;
 
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Comparator;
 import java.util.Properties;
 
 public class BasicController implements Controller{
@@ -44,57 +46,23 @@ public class BasicController implements Controller{
         vh.bind(page.centerProperty(), modal.centerProperty());
         ToggleGroup navigationGroup = new ToggleGroup();
 
-        File modulesFolder = new File("./modules");
-        modulesFolder.mkdir();
-        ObservableList<Module> modules = FXCollections.observableArrayList();
-        File[] files = modulesFolder.listFiles();
-        if(files != null){
-            for(File jar : files){
-                if(!(jar.isFile() && jar.getName().endsWith(".jar")))continue;
-                System.out.println(jar.getName());
-                Module m = loadModule(jar);
-                if(m == null)continue;
-                modules.add(m);
-                m.onLoad();
-            }
-        }
-        for (Module module : modules) {
-            ToggleButton btn = new ToggleButton(module.getTitle());
-            btn.setAlignment(Pos.CENTER_LEFT);
-            btn.setToggleGroup(navigationGroup);
-            navigationGroup.selectedToggleProperty().addListener((observableValue, toggle, t1) -> {
-                if(btn.equals(t1)){
-                    vh.setModule(module);
-                    module.onSelect(vh);
-                } else if(btn.equals(toggle)){
-                    module.onUnselect();
-                    vh.setModule(null);
-                }
-                if(t1 == null)vh.openPage(null);
+        ModuleManager.getInstance().loadModules(event -> {
+            ModuleManager.getInstance().getModules().stream().sorted(Comparator.comparing(Module::getTitle)).forEach(module -> {
+                ToggleButton btn = new ToggleButton(module.getTitle());
+                btn.setAlignment(Pos.CENTER_LEFT);
+                btn.setToggleGroup(navigationGroup);
+                navigationGroup.selectedToggleProperty().addListener((observableValue, toggle, t1) -> {
+                    if(btn.equals(t1)){
+                        vh.setModule(module);
+                        module.onSelect(vh);
+                    } else if(btn.equals(toggle)){
+                        module.onUnselect();
+                        vh.setModule(null);
+                    }
+                    if(t1 == null)vh.openPage(null);
+                });
+                modelsList.getChildren().add(btn);
             });
-            modelsList.getChildren().add(btn);
-        }
-    }
-
-    private Module loadModule(File f){
-        try {
-            URLClassLoader child = new URLClassLoader(
-                    new URL[] {f.toURI().toURL()},
-                    this.getClass().getClassLoader()
-            );
-            InputStream info = child.getResourceAsStream("module.properties");
-            if(info == null)throw new RuntimeException("module.properties error");
-            Properties properties = new Properties();
-            properties.load(info);
-            ModuleInfo moduleInfo = new ModuleInfo(properties);
-            Class<Module> module = (Class<Module>) Class.forName(moduleInfo.getMain(), true, child);
-            Module m = module.getDeclaredConstructor().newInstance();
-            m.setWorkDirectory(f.getParentFile().toPath().resolve(moduleInfo.getName()).toFile());
-            m.setInfo(moduleInfo);
-            return m;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        });
     }
 }
