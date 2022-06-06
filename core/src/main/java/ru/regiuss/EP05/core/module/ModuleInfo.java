@@ -1,14 +1,19 @@
 package ru.regiuss.EP05.core.module;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Properties;
 
 public class ModuleInfo {
-    @JsonProperty("name")
     private String name;
-    @JsonProperty("version")
     private String version;
-    @JsonProperty("main")
     private String main;
+
+    public ModuleInfo(){}
+
+    public ModuleInfo(Properties properties){
+        name = properties.getProperty("name");
+        version = properties.getProperty("version");
+        main = properties.getProperty("main");
+    }
 
     public String getName() {
         return name;

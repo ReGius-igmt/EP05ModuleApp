@@ -1,12 +1,18 @@
-package ru.ket.EP05.T4;
+package ru.ket.EP05.T6;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Paint;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
+import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.NoDataException;
+import org.apache.commons.math3.exception.NullArgumentException;
+import org.apache.commons.math3.linear.*;
 import ru.regiuss.EP05.core.SimpleViewHandler;
 import ru.regiuss.EP05.core.controller.Controller;
 
@@ -21,10 +27,10 @@ public class MainController implements Controller {
     private GridPane resGrid;
 
     @FXML
-    private TextField scalar;
+    private TextField size;
 
     @FXML
-    private TextField size;
+    private CheckBox fractionNumCB;
 
     private TextField[][] nodes;
 
@@ -36,7 +42,7 @@ public class MainController implements Controller {
             if(n > 10)throw new RuntimeException("Размер не может быть больше 10");
             resGrid.setVisible(false);
             resGrid.setManaged(false);
-            generate(n);
+            generate(n, fractionNumCB.isSelected());
         } catch (NumberFormatException e){
             new Alert(Alert.AlertType.ERROR, "Неверный формат числа").show();
         } catch (RuntimeException e){
@@ -46,7 +52,7 @@ public class MainController implements Controller {
         }
     }
 
-    private void generate(int n){
+    private void generate(int n, boolean fraction){
         grid.getRowConstraints().clear();
         grid.getColumnConstraints().clear();
         grid.getChildren().clear();
@@ -60,7 +66,9 @@ public class MainController implements Controller {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                TextField tf = new TextField(Integer.toString(random.nextInt(100)));
+                TextField tf = new TextField();
+                if(fraction) tf.setText(Double.toString(random.nextInt(10000) / 100.0));
+                else tf.setText(Integer.toString(random.nextInt(100)));
                 tf.setMaxSize(50,50);
                 tf.setAlignment(Pos.CENTER);
                 tf.setPrefSize(50, 50);
@@ -85,16 +93,14 @@ public class MainController implements Controller {
 
     @FXML
     void onResult(ActionEvent event) {
-
-        Integer scalarV = readValue(scalar);
-        if(scalarV == null)return;
-
         int size = nodes.length;
-        int[][] values = new int[size][size];
+        double[][] values = new double[size][size];
         try {
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
-                    values[i][j] = Integer.parseInt(nodes[i][j].getText());
+                    //if(j < size)
+                        values[i][j] = Double.parseDouble(nodes[i][j].getText());
+                    //else if(j-size == i)values[i][j] = 1;
                 }
             }
         } catch (NumberFormatException e) {
@@ -105,8 +111,28 @@ public class MainController implements Controller {
             return;
         }
 
-        Matrix m = new Matrix(values);
-        values = m.multiply(scalarV);
+//        for (int i = 0; i < size; i++) {
+//            for (int j = 0; j < size*2; j++) {
+//                if(i != j)values[i][j] /= values[i][i];
+//            }
+//            values[i][i] = 1;
+//        }
+
+        try {
+            RealMatrix A = new Array2DRowRealMatrix(values);
+            DecompositionSolver solver = new LUDecomposition(A).getSolver();
+            double[][] rhs = new double[size][size];
+            for (int i = 0; i < size; i++) {
+                rhs[i][i] = 1;
+            }
+            RealMatrix I = new Array2DRowRealMatrix(rhs);
+            RealMatrix B = solver.solve(I);
+            values = B.getData();
+        } catch (Exception e) {
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "Невозможно найти обратную матрицу");
+            return;
+        }
 
         resGrid.setVisible(true);
         resGrid.setManaged(true);
@@ -121,7 +147,7 @@ public class MainController implements Controller {
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                TextField tf = new TextField(Integer.toString(values[i][j]));
+                TextField tf = new TextField(String.format(values[i][j] % 1.0 == 0 ? "%.0f" : "%.2f", values[i][j]));
                 tf.setMaxSize(50,50);
                 tf.setEditable(false);
                 tf.setAlignment(Pos.CENTER);
@@ -136,8 +162,7 @@ public class MainController implements Controller {
         resGrid.setVisible(false);
         resGrid.setManaged(false);
         size.setOnAction(this::onGenerate);
-        scalar.setOnAction(this::onResult);
         size.setText("5");
-        generate(5);
+        generate(5, fractionNumCB.isSelected());
     }
 }

@@ -9,14 +9,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <artifactId>T5</artifactId>
+    <artifactId>T6</artifactId>
     <version>1.0</version>
 
     <properties>
         <maven.compiler.source>16</maven.compiler.source>
         <maven.compiler.target>16</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <module.main>ru.ket.EP05.T5.T5</module.main>
+        <module.main>ru.ket.EP05.T6.T6</module.main>
     </properties>
 
     <dependencies>
@@ -24,6 +24,11 @@
             <groupId>ru.ket.EP05</groupId>
             <artifactId>core</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
         </dependency>
     </dependencies>
 

@@ -6,7 +6,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>T0</artifactId>
+  <artifactId>T6</artifactId>
   <version>1.0</version>
   <build>
     <resources>
@@ -47,17 +47,25 @@
         <configuration>
           <artifactSet>
             <excludes>
-              <exclude>ru.regiuss.EP05.core:core:*</exclude>
+              <exclude>ru.ket.EP05:core:*</exclude>
             </excludes>
           </artifactSet>
         </configuration>
       </plugin>
     </plugins>
   </build>
+  <dependencies>
+    <dependency>
+      <groupId>ru.ket.EP05</groupId>
+      <artifactId>core</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
   <properties>
     <maven.compiler.target>16</maven.compiler.target>
     <maven.compiler.source>16</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <module.main>ru.ket.EP05.T0.T0</module.main>
+    <module.main>ru.ket.EP05.T6.T6</module.main>
   </properties>
 </project>

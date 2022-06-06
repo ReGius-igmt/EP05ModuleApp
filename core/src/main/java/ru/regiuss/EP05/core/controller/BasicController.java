@@ -1,6 +1,5 @@
 package ru.regiuss.EP05.core.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -18,6 +17,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Properties;
 
 public class BasicController implements Controller{
 
@@ -44,7 +44,6 @@ public class BasicController implements Controller{
         vh.bind(page.centerProperty(), modal.centerProperty());
         ToggleGroup navigationGroup = new ToggleGroup();
 
-        ObjectMapper om = new ObjectMapper();
         File modulesFolder = new File("./modules");
         modulesFolder.mkdir();
         ObservableList<Module> modules = FXCollections.observableArrayList();
@@ -73,16 +72,6 @@ public class BasicController implements Controller{
                 }
                 if(t1 == null)vh.openPage(null);
             });
-//            btn.setOnAction(event -> {
-//                if(btn.isSelected()){
-//                    vh.setModule(module);
-//                    module.onSelect(vh);
-//                }
-//                else {
-//                    module.onUnselect();
-//                    vh.setModule(null);
-//                }
-//            });
             modelsList.getChildren().add(btn);
         }
     }
@@ -93,9 +82,11 @@ public class BasicController implements Controller{
                     new URL[] {f.toURI().toURL()},
                     this.getClass().getClassLoader()
             );
-            InputStream info = child.getResourceAsStream("module.json");
-            if(info == null)throw new RuntimeException("module.json error");
-            ModuleInfo moduleInfo = new ObjectMapper().readValue(info, ModuleInfo.class);
+            InputStream info = child.getResourceAsStream("module.properties");
+            if(info == null)throw new RuntimeException("module.properties error");
+            Properties properties = new Properties();
+            properties.load(info);
+            ModuleInfo moduleInfo = new ModuleInfo(properties);
             Class<Module> module = (Class<Module>) Class.forName(moduleInfo.getMain(), true, child);
             Module m = module.getDeclaredConstructor().newInstance();
             m.setWorkDirectory(f.getParentFile().toPath().resolve(moduleInfo.getName()).toFile());
